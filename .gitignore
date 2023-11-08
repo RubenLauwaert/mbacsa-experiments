@@ -1,4 +1,5 @@
 dist/**/*
 node_modules
 package-lock.json
-mbacsa-css/**/*
+/mbacsa-css/**/*
+mbacsa-css
