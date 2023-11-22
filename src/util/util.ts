@@ -1,6 +1,5 @@
-import { WebID } from "mbacsa-client-2/dist/types/WebID";
-import { mainModule } from "process";
-import { PerformanceResult } from "../experiments/main";
+import { WebID } from "mbacsa-client/dist/types/WebID";
+
 
 export function extractPathToPodServer(agent: WebID):string{
   const url = new URL(agent);
@@ -18,12 +17,21 @@ export function generatePerformanceResult(responseTimes: number[]): PerformanceR
   // Convert microseconds to milliseconds
   const responseTimesInMilliseconds = responseTimes.map(time => time / 1000);
 
-  // Calculate max, min, standard deviation, and average
-  const maxTime = Math.max(...responseTimesInMilliseconds);
-  const minTime = Math.min(...responseTimesInMilliseconds);
-  const sum = responseTimesInMilliseconds.reduce((acc, time) => acc + time, 0);
-  const averageTime = sum / responseTimesInMilliseconds.length;
-  const stdDev = Math.sqrt(responseTimesInMilliseconds.reduce((acc, time) => acc + Math.pow(time - averageTime, 2), 0) / responseTimesInMilliseconds.length);
+  // Sort the response times in ascending order
+  const sortedTimes = responseTimesInMilliseconds.slice().sort((a, b) => a - b);
+
+  // Calculate max, min, standard deviation, average, and median
+  const maxTime = Math.max(...sortedTimes);
+  const minTime = Math.min(...sortedTimes);
+  const sum = sortedTimes.reduce((acc, time) => acc + time, 0);
+  const averageTime = sum / sortedTimes.length;
+  const stdDev = Math.sqrt(sortedTimes.reduce((acc, time) => acc + Math.pow(time - averageTime, 2), 0) / sortedTimes.length);
+  
+  // Calculate the median
+  const middle = Math.floor(sortedTimes.length / 2);
+  const medianTime = sortedTimes.length % 2 === 0
+    ? (sortedTimes[middle - 1] + sortedTimes[middle]) / 2
+    : sortedTimes[middle];
 
   // Format the results to have two digits after the decimal point
   const formatResult = (value: number): number => parseFloat(value.toFixed(2));
@@ -32,7 +40,8 @@ export function generatePerformanceResult(responseTimes: number[]): PerformanceR
     max_time: formatResult(maxTime),
     min_time: formatResult(minTime),
     std_dev: formatResult(stdDev),
-    avg_time: formatResult(averageTime)
+    avg_time: formatResult(averageTime),
+    median_time: formatResult(medianTime)
   };
 }
 
@@ -43,9 +52,18 @@ export type AgentInfo = {
   password:string
 }
 
-export async function measurePerformanceAsync(fn: () => Promise<any>): Promise<number> {
-  const start = process.hrtime();
-  await fn();
-  const end = process.hrtime(start);
-  return end[0] * 1e6 + end[1] / 1e3; // Convert to microseconds
+export const emptyPerformanceResult:PerformanceResult = {
+  max_time: 0,
+  min_time:0,
+  avg_time:0,
+  std_dev:0,
+  median_time:0
+}
+
+export type PerformanceResult = {
+  max_time:number,
+  min_time:number,
+  std_dev:number,
+  avg_time:number,
+  median_time?:number
 }

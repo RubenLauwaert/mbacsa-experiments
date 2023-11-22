@@ -16,6 +16,6 @@
   },
   "dependencies": {
     "@types/node": "^20.8.10",
-    "mbacsa-client-2": "^1.1.5"
+    "mbacsa-client": "^1.0.3"
   }
 }

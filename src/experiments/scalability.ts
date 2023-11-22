@@ -1,5 +1,5 @@
-import { MbacsaClient } from "mbacsa-client-2";
-import { AgentInfo, extractPathToPodServer, generatePerformanceResult } from "../util/util.js"
+import { MbacsaClient } from "mbacsa-client";
+import { AgentInfo, PerformanceResult, extractPathToPodServer, generatePerformanceResult } from "../util/util.js"
 
 
 export type ConfigScalabilityExperiment = {
@@ -9,10 +9,7 @@ export type ConfigScalabilityExperiment = {
   iterations: number
 }
 
-export type MbacsaScalabilityReport = {
-  iterations:number,
-
-}
+export type MbacsaScalabilityReport = PerformanceResult[]
 
 
 export async function runScalabilityExperiment(config:ConfigScalabilityExperiment):Promise<MbacsaScalabilityReport> {
@@ -40,10 +37,7 @@ export async function runScalabilityExperiment(config:ConfigScalabilityExperimen
    },dpopTokenMinter)
 
    // Minter discharges macaroon
-   const {dischargeMacaroon: dischargeMacaroonMinter} = await client.dischargeDelegationToken(minter,{
-     agentToDischarge:minter,
-     serializedRootMacaroon: mintResponse.mintedMacaroon
-   },dpopTokenMinter)
+   const {dischargeMacaroon: dischargeMacaroonMinter} = await client.dischargeLastThirdPartyCaveat(mintResponse.mintedMacaroon,minter,dpopTokenMinter)
 
    // Construct delegation chain
    const [minterInfo,...delegatees] = agents
@@ -58,10 +52,7 @@ export async function runScalabilityExperiment(config:ConfigScalabilityExperimen
    const dischargeProofsDelegatees = await Promise.all(delegatees.map(async ({webId:delegatee, email:emailDelegatee, password: passwordDelegatee},chainIndex) => {
      const podServerDelegatee = extractPathToPodServer(delegatee)
      const dpopTokenDelegatee = await client.retrieveDPoPToken(podServerDelegatee,emailDelegatee,passwordDelegatee)
-     const {dischargeMacaroon: dischargeProofDelegatee} = await client.dischargeDelegationToken(delegatee,{
-       agentToDischarge: delegatee,
-       serializedRootMacaroon: attenuatedMacaroons[chainIndex + 1]
-     },dpopTokenDelegatee);
+     const {dischargeMacaroon: dischargeProofDelegatee} = await client.dischargeLastThirdPartyCaveat(attenuatedMacaroons[chainIndex + 1],delegatee,dpopTokenDelegatee)
      return dischargeProofDelegatee;
    }))
 
@@ -99,6 +90,6 @@ const report = results.map((responseTimes) => {
   return generatePerformanceResult(responseTimes);
 })
 
-console.log(report)
+return report;
 
 }

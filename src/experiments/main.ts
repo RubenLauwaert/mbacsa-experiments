@@ -1,5 +1,5 @@
-import { MbacsaClient } from "mbacsa-client-2"
-import { AgentInfo, extractPathToPodServer, generatePerformanceResult } from "../util/util.js"
+import { MbacsaClient } from "mbacsa-client"
+import { AgentInfo, PerformanceResult, emptyPerformanceResult, extractPathToPodServer, generatePerformanceResult } from "../util/util.js"
 
 
 export type MbacsaPerformanceReport = {
@@ -12,19 +12,7 @@ export type MbacsaPerformanceReport = {
 }
 
 
-export const emptyPerformanceResult:PerformanceResult = {
-  max_time: 0,
-  min_time:0,
-  avg_time:0,
-  std_dev:0
-}
 
-export type PerformanceResult = {
-  max_time:number,
-  min_time:number,
-  std_dev:number,
-  avg_time:number
-}
 
 export type MainConfigurationInfo = {
   targetEndpoint:string,
@@ -77,11 +65,7 @@ export async function runMainPerformanceExperiments(config:MainConfigurationInfo
 
   // Agent 2 discharging third-party caveat, encompassed in minted macaroon
   const startDischargeTime = process.hrtime();
-  const dischargeResponseAgent2 = await client.dischargeDelegationToken(agent2,{
-    agentToDischarge: agent2,
-    serializedRootMacaroon: mintResponse.mintedMacaroon,
-    mode: 'read'
-  },dpopTokenAgent2) 
+  const dischargeResponseAgent2 = await client.dischargeLastThirdPartyCaveat(mintResponse.mintedMacaroon,agent2,dpopTokenAgent2)
   const endDischargeTime = process.hrtime(startDischargeTime);
   const elapsedDischargeTimeMicroSec = endDischargeTime[0] * 1e6 + endDischargeTime[1] / 1e3;
   dischargeResponseTimes.push(elapsedDischargeTimeMicroSec)
@@ -94,9 +78,7 @@ export async function runMainPerformanceExperiments(config:MainConfigurationInfo
   delegationResponseTimes.push(elapsedDelegationTimeMicroSec);
   // Agent 3 discharges delegation from Agent 2
   const dpopTokenAgent3 = await client.retrieveDPoPToken(extractPathToPodServer(agent3),emailAgent3,pwAgent3);
-  const dischargeResponseAgent3 = await client.dischargeDelegationToken(agent3,{
-    agentToDischarge:agent3,
-    serializedRootMacaroon:delegatedMacaroonAgent3},dpopTokenAgent3)
+  const dischargeResponseAgent3 = await client.dischargeLastThirdPartyCaveat(delegatedMacaroonAgent3,agent3,dpopTokenAgent3);
   
   // Agent 3 accesses target resource via MBACSA
   const startAuthorizingTime = process.hrtime()

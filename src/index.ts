@@ -1,6 +1,6 @@
-import { MbacsaClient } from "mbacsa-client-2";
+import { MbacsaClient } from "mbacsa-client";
 import { AgentInfo, extractPathToPodServer, generatePerformanceResult } from "./util/util.js";
-import { WebID } from "mbacsa-client-2/dist/types/WebID.js";
+import { WebID } from "mbacsa-client/dist/types/WebID.js";
 import { MainConfigurationInfo, runMainPerformanceExperiments as runMainPerformanceExperiment } from "./experiments/main.js";
 import { ConfigScalabilityExperiment, runScalabilityExperiment } from "./experiments/scalability.js";
 
@@ -18,12 +18,11 @@ const mainConfig:MainConfigurationInfo = {
   agent3Info: { webId: "http://localhost:3000/Charlie/profile/card#me",
             email: "Charlie@example.com",
             password: "Charlie"},
-  iterations: 1
+  iterations: 10
 }
 
 
 const performanceResult = await runMainPerformanceExperiment(mainConfig);
-console.log(performanceResult)
 
 const scalabilityConfig:ConfigScalabilityExperiment = {
   iterations: 100,
