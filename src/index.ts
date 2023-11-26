@@ -1,8 +1,5 @@
-import { MbacsaClient } from "mbacsa-client";
-import { AgentInfo, extractPathToPodServer, generatePerformanceResult } from "./util/util.js";
-import { WebID } from "mbacsa-client/dist/types/WebID.js";
-import { MainConfigurationInfo, runMainPerformanceExperiments as runMainPerformanceExperiment } from "./experiments/main.js";
-import { ConfigScalabilityExperiment, runScalabilityExperiment } from "./experiments/scalability.js";
+import { MainConfigurationInfo, runMainPerformanceExperiments as runMainPerformanceExperiment, writeCorePerformanceResultsToFile } from "./experiments/main.js";
+import { ConfigScalabilityExperiment, runScalabilityExperiment, writeScalabilityResultToFile } from "./experiments/scalability.js";
 
 
 
@@ -18,15 +15,16 @@ const mainConfig:MainConfigurationInfo = {
   agent3Info: { webId: "http://localhost:3000/Charlie/profile/card#me",
             email: "Charlie@example.com",
             password: "Charlie"},
-  iterations: 10
+  iterations: 1
 }
 
+//const mainResults = await runMainPerformanceExperiment(mainConfig);
+await writeCorePerformanceResultsToFile(mainConfig,'./results/core-ops.json')
 
-const performanceResult = await runMainPerformanceExperiment(mainConfig);
 
 const scalabilityConfig:ConfigScalabilityExperiment = {
   iterations: 100,
-  lengthDelegationChain: 8,
+  lengthDelegationChain: 10,
   targetEndpoint: "http://localhost:3000/Alice/social/post1.json",
   agents: [
     { webId: "http://localhost:3000/Bob/profile/card#me", email: "Bob@example.com", password: "Bob" },
@@ -37,8 +35,9 @@ const scalabilityConfig:ConfigScalabilityExperiment = {
     { webId: "http://localhost:3000/Grace/profile/card#me", email: "Grace@example.com", password: "Grace" },
     { webId: "http://localhost:3000/Hank/profile/card#me", email: "Hank@example.com", password: "Hank" },
     { webId: "http://localhost:3000/John/profile/card#me", email: "John@example.com", password: "John" },
-  ]
+    { webId: "http://localhost:3000/Kate/profile/card#me", email: "Kate@example.com", password: "Kate" },
+    { webId: "http://localhost:3000/Liam/profile/card#me", email: "Liam@example.com", password: "Liam" }]
 }
 
-const scalabilityResult = await runScalabilityExperiment(scalabilityConfig);
-console.log(scalabilityResult)
+await runScalabilityExperiment(scalabilityConfig)
+

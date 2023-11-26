@@ -1,9 +1,10 @@
 import { MbacsaClient } from "mbacsa-client"
 import { AgentInfo, PerformanceResult, emptyPerformanceResult, extractPathToPodServer, generatePerformanceResult } from "../util/util.js"
-
+import * as fs from 'fs';
 
 export type MbacsaPerformanceReport = {
   iterations:number,
+  keyRetrieval:PerformanceResult,
   minting:PerformanceResult,
   delegating:PerformanceResult,
   discharging:PerformanceResult,
@@ -33,6 +34,7 @@ export async function runMainPerformanceExperiments(config:MainConfigurationInfo
 
   let report:MbacsaPerformanceReport = {
     iterations: iterations,
+    keyRetrieval: emptyPerformanceResult,
     minting: emptyPerformanceResult,
     delegating: emptyPerformanceResult,
     discharging: emptyPerformanceResult,
@@ -40,6 +42,7 @@ export async function runMainPerformanceExperiments(config:MainConfigurationInfo
     revoking: emptyPerformanceResult
   };
   // Data for measuring performance
+  let retrievalResponseTimes:number[] = [];
   let mintResponseTimes:number[] = [];
   let dischargeResponseTimes:number[] = [];
   let delegationResponseTimes:number[] = [];
@@ -48,8 +51,15 @@ export async function runMainPerformanceExperiments(config:MainConfigurationInfo
   // Run experiments
   const client = new MbacsaClient();
   for(let i = 0 ; i < iterations ; i++){
-    // Agent 2 minting macaroon for target resource, located at pod of agent1
+
+    // Retrieve discharge key for minter
+    const startRetrievalTime = process.hrtime();
     const dKeyAgent2 = await client.getPublicDischargeKey(agent2);
+    const endRetrievalTime = process.hrtime(startRetrievalTime);
+    const elapsedRetrievalTimeMicroSec = endRetrievalTime[0] * 1e6 + endRetrievalTime[1] / 1e3;
+    retrievalResponseTimes.push(elapsedRetrievalTimeMicroSec);
+
+    // Agent 2 minting macaroon for target resource, located at pod of agent1
     const dpopTokenAgent2 = await client.retrieveDPoPToken(extractPathToPodServer(agent2), emailAgent2,pwAgent2);
     const startMintTime = process.hrtime();
     const mintResponse = await client.mintDelegationToken(agent2,
@@ -71,8 +81,9 @@ export async function runMainPerformanceExperiments(config:MainConfigurationInfo
   dischargeResponseTimes.push(elapsedDischargeTimeMicroSec)
 
   // Agent 2 delegates 'read' access to Agent 3
+  const pdkAgent3 = await client.getPublicDischargeKey(agent3)
   const startDelegationTime = process.hrtime()
-  const delegatedMacaroonAgent3 = await client.delegateAccessTo(mintResponse.mintedMacaroon,agent3);
+  const delegatedMacaroonAgent3 = await client.delegateAccessTo(mintResponse.mintedMacaroon,agent3,pdkAgent3.dischargeKey);
   const endDelegationTime = process.hrtime(startDelegationTime)
   const elapsedDelegationTimeMicroSec = endDelegationTime[0] * 1e6 + endDelegationTime[1] / 1e3;
   delegationResponseTimes.push(elapsedDelegationTimeMicroSec);
@@ -90,11 +101,7 @@ export async function runMainPerformanceExperiments(config:MainConfigurationInfo
 
   // Agent 2 revokes Agent 3's access to the target resource
   const startRevocationTime = process.hrtime();
-  const revocationResponse = await client.revokeDelegationToken({
-    revoker:agent2,
-    revokee:agent3,
-    serializedMacaroons: [mintResponse.mintedMacaroon,dischargeResponseAgent2.dischargeMacaroon]
-  },dpopTokenAgent2)
+  const revocationResponse = await client.revokeDelegationToken(agent2,agent3,[mintResponse.mintedMacaroon,dischargeResponseAgent2.dischargeMacaroon])
 
   const endRevocationTime = process.hrtime(startRevocationTime);
   const elapsedRevocationTimeMicroSec = endRevocationTime[0] * 1e6 + endRevocationTime[1] / 1e3;
@@ -103,6 +110,7 @@ export async function runMainPerformanceExperiments(config:MainConfigurationInfo
   }
 
   // Construct Performance report
+  report.keyRetrieval = generatePerformanceResult(retrievalResponseTimes)
   report.minting = generatePerformanceResult(mintResponseTimes);
   report.delegating = generatePerformanceResult(delegationResponseTimes)
   report.discharging = generatePerformanceResult(dischargeResponseTimes);
@@ -110,4 +118,24 @@ export async function runMainPerformanceExperiments(config:MainConfigurationInfo
   report.revoking = generatePerformanceResult(revocationResponseTimes);
   
   return report;
+}
+
+
+
+
+export async function writeCorePerformanceResultsToFile(config:MainConfigurationInfo, path:string):Promise<void>{
+  try {
+    // Assuming runMainPerformanceExperiment returns the performanceResult
+    const performanceResult = await runMainPerformanceExperiments(config);
+
+    // Convert the array to JSON string
+    const jsonData = JSON.stringify(performanceResult, null, 2);
+
+    // Write the JSON data to the file
+    fs.writeFileSync(path, jsonData);
+
+    console.log('Data has been written to core-ops.json');
+  } catch (error) {
+    console.error('Error writing to file:', error);
+  }
 }

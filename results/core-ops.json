@@ -1,0 +1,45 @@
+{
+  "iterations": 1,
+  "keyRetrieval": {
+    "max_time": 21.29,
+    "min_time": 21.29,
+    "std_dev": 0,
+    "avg_time": 21.29,
+    "median_time": 21.29
+  },
+  "minting": {
+    "max_time": 34.02,
+    "min_time": 34.02,
+    "std_dev": 0,
+    "avg_time": 34.02,
+    "median_time": 34.02
+  },
+  "delegating": {
+    "max_time": 5.01,
+    "min_time": 5.01,
+    "std_dev": 0,
+    "avg_time": 5.01,
+    "median_time": 5.01
+  },
+  "discharging": {
+    "max_time": 6.89,
+    "min_time": 6.89,
+    "std_dev": 0,
+    "avg_time": 6.89,
+    "median_time": 6.89
+  },
+  "authorizing": {
+    "max_time": 7.35,
+    "min_time": 7.35,
+    "std_dev": 0,
+    "avg_time": 7.35,
+    "median_time": 7.35
+  },
+  "revoking": {
+    "max_time": 5.91,
+    "min_time": 5.91,
+    "std_dev": 0,
+    "avg_time": 5.91,
+    "median_time": 5.91
+  }
+}
