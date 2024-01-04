@@ -18,7 +18,6 @@ const mainConfig:MainConfigurationInfo = {
   iterations: 1
 }
 
-//const mainResults = await runMainPerformanceExperiment(mainConfig);
 await writeCorePerformanceResultsToFile(mainConfig,'./results/core-ops.json')
 
 
