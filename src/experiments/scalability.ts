@@ -1,6 +1,7 @@
 import { MbacsaClient } from "mbacsa-client";
 import { AgentInfo, PerformanceResult, extractPathToPodServer, generatePerformanceResult } from "../util/util.js"
 import * as fs from 'fs';
+import path from 'path';
 
 export type ConfigScalabilityExperiment = {
   targetEndpoint:string,
@@ -58,6 +59,7 @@ export async function runScalabilityExperiment(config:ConfigScalabilityExperimen
   }))
 
   const dischargeProofs = [dischargeMacaroonMinter,...dischargeProofsDelegatees]
+
 
   // Scalability performance results
   let authorizationResults = [];
@@ -151,16 +153,21 @@ export async function runScalabilityExperiment(config:ConfigScalabilityExperimen
 }
 
 
-export async function writeScalabilityResultToFile(result: MbacsaScalabilityReport, path: string):Promise<void>{
+
+
+export async function writeScalabilityResultToFile(result: MbacsaScalabilityReport, filePath: string): Promise<void> {
   try {
-  
+    // Ensure that the directory exists
+    const dirPath = path.dirname(filePath);
+    fs.mkdirSync(dirPath, { recursive: true });
+
     // Convert the array to JSON string
     const jsonData = JSON.stringify(result, null, 2);
 
     // Write the JSON data to the file
-    fs.writeFileSync(path, jsonData);
+    fs.writeFileSync(filePath, jsonData);
 
-    console.log(`Data has been written to file: ${path}`);
+    console.log(`Performance results have been written to file: ${filePath}`);
   } catch (error) {
     console.error('Error writing to file:', error);
   }

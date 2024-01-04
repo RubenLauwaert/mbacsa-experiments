@@ -1,6 +1,10 @@
 import { MbacsaClient } from "mbacsa-client"
 import { AgentInfo, PerformanceResult, emptyPerformanceResult, extractPathToPodServer, generatePerformanceResult } from "../util/util.js"
 import * as fs from 'fs';
+import path from 'path';
+
+
+
 
 export type MbacsaPerformanceReport = {
   iterations:number,
@@ -121,20 +125,22 @@ export async function runMainPerformanceExperiments(config:MainConfigurationInfo
 }
 
 
-
-
-export async function writeCorePerformanceResultsToFile(config:MainConfigurationInfo, path:string):Promise<void>{
+export async function writeCorePerformanceResultsToFile(config: MainConfigurationInfo, filePath: string): Promise<void> {
   try {
     // Assuming runMainPerformanceExperiment returns the performanceResult
     const performanceResult = await runMainPerformanceExperiments(config);
+
+    // Ensure that the directory exists
+    const dirPath = path.dirname(filePath);
+    fs.mkdirSync(dirPath, { recursive: true });
 
     // Convert the array to JSON string
     const jsonData = JSON.stringify(performanceResult, null, 2);
 
     // Write the JSON data to the file
-    fs.writeFileSync(path, jsonData);
+    fs.writeFileSync(filePath, jsonData);
 
-    console.log('Data has been written to core-ops.json');
+    console.log("Performance results have been written to file: " + filePath);
   } catch (error) {
     console.error('Error writing to file:', error);
   }
