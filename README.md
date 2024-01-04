@@ -15,7 +15,7 @@ After installing the dependencies, you can run the experiments with:
 
 After running the experiments, the results of the experiments should be written to :
 
-`/resulsts/core-ops.json`
+`/results/core-ops.json`
 
 `/results/authorization.json`
 
