@@ -13,6 +13,14 @@ After installing the dependencies, you can run the experiments with:
 `npm run build && npm run start`
 
 
+After running the experiments, the results of the experiments should be written to :
+
+`/resulsts/core-ops.json`
+
+`/results/authorization.json`
+
+`/results/revocation.json`
+
 
 
 
