@@ -19,7 +19,7 @@ export type MbacsaPerformanceReport = {
 
 
 
-export type MainConfigurationInfo = {
+export type CoreOpsConfigurationInfo = {
   targetEndpoint:string,
   agent1Info:AgentInfo, 
   agent2Info:AgentInfo, 
@@ -28,8 +28,12 @@ export type MainConfigurationInfo = {
 }
 
 
-
-export async function runMainPerformanceExperiments(config:MainConfigurationInfo):Promise<MbacsaPerformanceReport>{
+/**
+ * Runs the core operation performance experiments based on the provided configuration.
+ * @param config The core operations configuration for the performance experiments.
+ * @returns A promise that resolves to a MbacsaPerformanceReport.
+ */
+export async function runMainPerformanceExperiments(config:CoreOpsConfigurationInfo):Promise<MbacsaPerformanceReport>{
   const {targetEndpoint, agent1Info, agent2Info, agent3Info, iterations} = config;
   // Agents
   const {webId: agent1} = agent1Info;
@@ -124,8 +128,13 @@ export async function runMainPerformanceExperiments(config:MainConfigurationInfo
   return report;
 }
 
-
-export async function writeCorePerformanceResultsToFile(config: MainConfigurationInfo, filePath: string): Promise<void> {
+/**
+ * Writes the core performance results to a file.
+ * @param config The main configuration for the performance experiments.
+ * @param filePath The file path to write the results to.
+ * @returns A promise that resolves when the results are written to the file.
+ */
+export async function writeCorePerformanceResultsToFile(config: CoreOpsConfigurationInfo, filePath: string): Promise<void> {
   try {
     // Assuming runMainPerformanceExperiment returns the performanceResult
     const performanceResult = await runMainPerformanceExperiments(config);

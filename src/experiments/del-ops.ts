@@ -3,17 +3,29 @@ import { AgentInfo, PerformanceResult, extractPathToPodServer, generatePerforman
 import * as fs from 'fs';
 import path from 'path';
 
-export type ConfigScalabilityExperiment = {
+
+/**
+ * Represents the configuration for delegation operations scalability experiments.
+ */
+export type ConfigDelegationOpsExperiment = {
   targetEndpoint:string,
   lengthDelegationChain:number,
   agents:AgentInfo[],
   iterations: number
 }
 
+
+/**
+ * Represents a scalability report for MbacsaClient performance.
+ */
 export type MbacsaScalabilityReport = PerformanceResult[]
 
-
-export async function runScalabilityExperiment(config:ConfigScalabilityExperiment):Promise<MbacsaScalabilityReport> {
+/**
+ * Runs scalability experiments for delegation operations based on the provided configuration.
+ * @param config The configuration for the scalability experiments.
+ * @returns A promise that resolves to a MbacsaScalabilityReport.
+ */
+export async function runScalabilityExperiment(config:ConfigDelegationOpsExperiment):Promise<MbacsaScalabilityReport> {
   
   const {targetEndpoint, lengthDelegationChain, agents, iterations} = config;
   // Check provided configuration
@@ -153,8 +165,12 @@ export async function runScalabilityExperiment(config:ConfigScalabilityExperimen
 }
 
 
-
-
+/**
+ * Writes a scalability result to a file.
+ * @param result The scalability result to write.
+ * @param filePath The file path to write the result to.
+ * @returns A promise that resolves when the result is written to the file.
+ */
 export async function writeScalabilityResultToFile(result: MbacsaScalabilityReport, filePath: string): Promise<void> {
   try {
     // Ensure that the directory exists

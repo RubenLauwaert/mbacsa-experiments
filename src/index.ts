@@ -1,10 +1,10 @@
-import { MainConfigurationInfo, runMainPerformanceExperiments as runMainPerformanceExperiment, writeCorePerformanceResultsToFile } from "./experiments/main.js";
-import { ConfigScalabilityExperiment, runScalabilityExperiment, writeScalabilityResultToFile } from "./experiments/scalability.js";
+import { CoreOpsConfigurationInfo, runMainPerformanceExperiments as runMainPerformanceExperiment, writeCorePerformanceResultsToFile } from "./experiments/core-ops.js";
+import { ConfigDelegationOpsExperiment, runScalabilityExperiment, writeScalabilityResultToFile } from "./experiments/del-ops.js";
 
 
 
-
-const mainConfig:MainConfigurationInfo = {
+// Define the main configuration for core operations performance experiments.
+const mainConfig:CoreOpsConfigurationInfo = {
   targetEndpoint: "Alice/social/post1.json",
   agent1Info: { webId: "http://localhost:3000/Alice/profile/card#me",
                 email: "Alice@example.com",
@@ -15,13 +15,19 @@ const mainConfig:MainConfigurationInfo = {
   agent3Info: { webId: "http://localhost:3000/Charlie/profile/card#me",
             email: "Charlie@example.com",
             password: "Charlie"},
-  iterations: 1
+  iterations: 100
 }
 
+
+/**
+ * Runs core operations performance experiments based on the provided configuration 
+ * and writes the results to a file.
+ */
 await writeCorePerformanceResultsToFile(mainConfig,'./results/core-ops.json')
 
 
-const scalabilityConfig:ConfigScalabilityExperiment = {
+ // Define the  configuration for delegation operations experiments.
+const scalabilityConfig:ConfigDelegationOpsExperiment = {
   iterations: 100,
   lengthDelegationChain: 20,
   targetEndpoint: "http://localhost:3000/Alice/social/post1.json",
@@ -50,5 +56,10 @@ const scalabilityConfig:ConfigScalabilityExperiment = {
 ]
 }
 
+
+/**
+ * Runs scalability experiments for delegation operations based 
+ * on the provided configuration.
+ */
 await runScalabilityExperiment(scalabilityConfig)
 
